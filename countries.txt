@@ -1,0 +1,15 @@
+China;1
+Italy;1
+US;1
+Spain;1
+Germany;1
+Iran;1
+France;1
+Korea, South;1
+Switzerland;1
+United Kingdom;1
+Netherlands;1
+Greece;1
+Portugal;1
+Finland;1
+Russia;1
