@@ -1,0 +1,3 @@
+*.rtf linguist-detectable=false
+*.cs linguist-detectable=true
+*.sln linguist-detectable=true
