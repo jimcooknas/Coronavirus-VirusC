@@ -11,5 +11,5 @@ United Kingdom;1
 Netherlands;1
 Greece;1
 Portugal;1
-Finland;1
-Russia;1
+Turkey;1
+Cuba;1
