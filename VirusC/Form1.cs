@@ -522,7 +522,12 @@ namespace VirusC
                             chart1.Series["Exponential Infection"].Points.AddXY(expX[i], expY[i]);
                         }
                     }
-                    double[] calcData = new double[valY.Length];
+                chart1.Series["NextDay Est."].Points.Clear();
+                double valXnext = valX[valX.Length - 1] + 1;
+                double valYnext = SigmoidFunction(valXnext, a, b, c);
+                chart1.Series["NextDay Est."].Points.AddXY(valXnext, valYnext);
+                chart1.Series["NextDay Est."].Points[0].Label = String.Format("{0:F0}", valYnext);
+                double[] calcData = new double[valY.Length];
                     for(int i=0;i<valX.Length;i++)calcData[i]= SigmoidFunction(valX[i], a, b, c);
                     try{
                         lblMSE.Text = String.Format("{0:F0}", MeanStandardError(valY, calcData));

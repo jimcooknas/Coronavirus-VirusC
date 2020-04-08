@@ -17,10 +17,15 @@ namespace VirusC
     {
         string[] lstCountries = Form1.lstCountries;
         Tuple<string, double>[] population = Form1.population;
-        string url = Form1.url[0];
-                     //"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv";
-                     //"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv";
+        string[] url = Form1.url;
+        //"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv";
+        //"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv";
         
+        double[] limit = new double[] { 10.0, 1.0, 1.0};
+        string[] xAxis = new string[] { "Days after 10 Confirmed Infected per 10.000.000 population",
+                                        "Days after 1 Death per 10.000.000 population",
+                                        "Days after 1 Recovered per 10.000.000 population"};
+
         List<DateTime> lstDates;
         List<int>[] lstData;
         List<int>[] lstDataNew;
@@ -64,12 +69,13 @@ namespace VirusC
                 check.CheckedChanged += checkBox_CheckedChanged;
                 check.TextAlign = ContentAlignment.MiddleLeft;
                 check.AutoSize = false;
-                check.Top = 81 + (i - 1) * 23;
+                check.Top = 131 + (i - 1) * 23;
                 check.Left = 1043;
                 check.Anchor = AnchorStyles.Top | AnchorStyles.Right;
                 check.Checked = selCountriesShow[i];
                 this.Controls.Add(check);
             }
+            comboBox1.SelectedIndex = 0;
             bIsLoading = false;
             this.WindowState = FormWindowState.Maximized;
         }
@@ -101,7 +107,7 @@ namespace VirusC
 
         private void button1_Click(object sender, EventArgs e)
         {
-            string csv = GetCSV(url).Trim();
+            string csv = GetCSV(url[comboBox1.SelectedIndex]).Trim();
             if (csv.Length == 0) return;
             string[] lines = csv.Split(new string[] { "\n" }, StringSplitOptions.None);
             string[] dates = lines[0].Trim().Split(',');
@@ -131,7 +137,6 @@ namespace VirusC
                     newVal[1] = li[0].Replace(",\"", "");
                     newVal[0] = "";
                     Array.Copy(li1, 0, newVal, 2, li1.Length);
-                    //Array.Copy(new string[] { "" }, 0, li1, 1, li1.Length);
                     li1 = newVal;
                 }else{
                     li1=lines[i].Trim().Split(',');
@@ -150,17 +155,15 @@ namespace VirusC
                         isSet[index] = true;
                     }
                 }
-                //else { MessageBox.Show("Cannot find " + xora); }
             }
             
             lstDataNew = new List<int>[lstCountries.Length];
-            //chart1.Series.Clear();
             foreach (string co in lstCountries){
                 int index = GetCountryIndex(co);
                 double pop = GetPopulation(co);
                 lstDataNew[index] = new List<int>();
                 for(int i = 0; i < lstData[index].Count; i++){
-                    if ((double)lstData[index][i] * 10000000.0 / pop >= 10.0){
+                    if ((double)lstData[index][i] * 10000000.0 / pop >= limit[comboBox1.SelectedIndex]){
                         for (int j = i; j < lstData[index].Count; j++) lstDataNew[index].Add((int)((double)lstData[index][j] * 10000000.0 / pop));
                         break;
                     }
@@ -173,12 +176,13 @@ namespace VirusC
         {
             chart1.Series.Clear();
             int col = 0;
+            chart1.ChartAreas["ChartArea1"].AxisX.Title = xAxis[comboBox1.SelectedIndex];
             foreach (string co in selCountries){
                 int index = GetCountryIndex(co);
                 double pop = GetPopulation(co);
                 textBox1.Text += lstCountries[index] + ": ";
                 for (int i = 0; i < lstDataNew[index].Count; i++){
-                    textBox1.Text += (i>0?"-":"") + lstDataNew[index][i];
+                    textBox1.Text += (i > 0 ? "-" : "") + lstDataNew[index][i];
                 }
                 textBox1.Text += "\r\n";
                 chart1.Series.Add(co);
@@ -186,9 +190,11 @@ namespace VirusC
                 for (int k = 0; k < lstDataNew[index].Count; k++)
                     chart1.Series[co].Points.AddXY((double)k, (double)lstDataNew[index][k]);
                 chart1.Series[co].Color = lineColor[col];
-                chart1.Series[co].Points[lstDataNew[index].Count - 1].Label = co;
-                chart1.Series[co].Points[lstDataNew[index].Count - 1].LabelForeColor = lineColor[col];// chart1.Series[co].Color;
-                chart1.Series[co].Points[lstDataNew[index].Count - 1].SetCustomProperty("LabelStyle", "Right");
+                if (lstDataNew[index].Count > 0){
+                    chart1.Series[co].Points[lstDataNew[index].Count - 1].Label = co;
+                    chart1.Series[co].Points[lstDataNew[index].Count - 1].LabelForeColor = lineColor[col];// chart1.Series[co].Color;
+                    chart1.Series[co].Points[lstDataNew[index].Count - 1].SetCustomProperty("LabelStyle", "Right");
+                }
                 chart1.Series[co].Enabled = CheckBoxIsChecked(co);
                 col++;
             }
@@ -266,13 +272,19 @@ namespace VirusC
                 check.CheckedChanged += checkBox_CheckedChanged;
                 check.TextAlign = ContentAlignment.MiddleLeft;
                 check.AutoSize = false;
-                check.Top = 81 + (i - 1) * 23;
+                check.Top = 131 + (i - 1) * 23;
                 check.Left = button1.Left;
                 check.Anchor = AnchorStyles.Top | AnchorStyles.Right;
                 check.Checked = selCountriesShow[i];
                 this.Controls.Add(check);
             }
             bIsLoading = false;
+            button1_Click(button1, EventArgs.Empty);
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (bIsLoading) return;
             button1_Click(button1, EventArgs.Empty);
         }
     }
